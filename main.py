@@ -7,7 +7,7 @@ import isodate
 from tqdm import tqdm
 import time
 
-API_KEY = 'AIzaSyBp7ZaKYILdvog6xUK0r54-z6X7jOFTj4g'
+API_KEY = ''
 url = 'https://www.googleapis.com/youtube/v3/playlistItems'
 
 def extract_month_year(publish_date):
@@ -60,7 +60,7 @@ def filter_videos_by_duration(videos):
         video_id = extract_video_id(video['url'])
         if video_id:
             duration = get_video_duration(video_id)
-            if duration and 1500 <= duration <= 3000:
+            if duration and 1500 <= duration <= 2400:
                 updated_videos.append(video)
         else:
             updated_videos.append(video)
