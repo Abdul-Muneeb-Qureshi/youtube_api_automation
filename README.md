@@ -12,8 +12,9 @@ This project retrieves videos from specified YouTube playlists, filters them by 
 - [Setting up YouTube Data API](#setting-up-youtube-data-api)
 - [Code Explanation](#code-explanation)
 - [Directory Structure](#directory-structure)
-
+- [Changing the Date for Video Filtering](#changing-the-date-for-Video-filtering)
 ---
+
 
 ## Getting Started
 
@@ -143,6 +144,17 @@ Refer to the [YouTube Data API documentation](https://developers.google.com/yout
   Loads data and runs all core functionalities of the script.
 
 ---
+
+
+## Changing the Date for Video Filtering
+You can change the date for filtering videos in this line inside the `processing` function:  
+
+```python
+all_videos = filter_videos_by_date(all_videos , '1 April 2024')
+```
+
+If you want to filter videos published after a different date, update `'1 April 2024'` to your desired date in the same format (`"DD Month YYYY"`).
+
 
 ## Directory Structure
 
