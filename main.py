@@ -10,6 +10,22 @@ import time
 API_KEY = ''
 url = 'https://www.googleapis.com/youtube/v3/playlistItems'
 
+
+def filter_videos_by_date(videos, date_str):
+    """
+    Filters videos that were published after the given date.
+    
+    :param videos: List of video dictionaries containing 'publish_date' and 'url'.
+    :param date_str: Date string in the format 'DD Month YYYY' (e.g., '2 June 2024').
+    :return: List of video URLs published after the given date.
+    """
+    
+    target_date = datetime.strptime(date_str, "%d %B %Y")
+    
+    filtered_videos = [video for video in videos if datetime.strptime(video['publish_date'], "%Y-%m-%dT%H:%M:%SZ") > target_date]
+    
+    return filtered_videos
+
 def extract_month_year(publish_date):
     date_object = datetime.strptime(publish_date, "%Y-%m-%dT%H:%M:%SZ")
     month = date_object.strftime("%B")
@@ -17,13 +33,16 @@ def extract_month_year(publish_date):
     return month, year
 
 def get_video_duration(video_id):
-    url = f"https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id={video_id}&key={API_KEY}"
+    video_id = "icI1z52tKwM"
+    url = f"https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id={video_id}&key={API_KEY}"
     
     for attempt in range(5):  # Retry up to 5 times
         try:
             response = requests.get(url)
             response.raise_for_status()  # Raise an error for bad responses
             data = response.json()
+            # print(data)
+            
 
             # Check for errors in the response
             if 'error' in data:
@@ -56,7 +75,8 @@ def extract_video_id(url):
 
 def filter_videos_by_duration(videos):
     updated_videos = []
-    for video in videos:
+    
+    for video in tqdm(videos, desc="Filtering Videos by Duration"):
         video_id = extract_video_id(video['url'])
         if video_id:
             duration = get_video_duration(video_id)
@@ -64,6 +84,7 @@ def filter_videos_by_duration(videos):
                 updated_videos.append(video)
         else:
             updated_videos.append(video)
+    
     return updated_videos
 
 def append_link_to_file(file_name, link):
@@ -82,9 +103,9 @@ def append_link_to_file(file_name, link):
 def store_videos(videos, channel_name, playlist_name):
     for video in videos:
         month, year = extract_month_year(video['publish_date'])
-        os.makedirs(f"result/{year}", exist_ok=True)
-        os.makedirs(f"result/{year}/{month}", exist_ok=True)
-        file_name = f"result/{year}/{month}/{channel_name}_{month}_{year}_{playlist_name}.txt"
+        os.makedirs(f"result1/{year}", exist_ok=True)
+        os.makedirs(f"result1/{year}/{month}", exist_ok=True)
+        file_name = f"result1/{year}/{month}/{channel_name}_{month}_{year}_{playlist_name}.txt"
         append_link_to_file(file_name, video['url'])
 
 def checkPlaylistOrder(playlist_id):
@@ -127,6 +148,7 @@ def load_data():
     return data
 
 def fetch_all_playlist_items(playlist_id, order):
+
     videos = []
     next_page_token = None
 
@@ -157,13 +179,15 @@ def fetch_all_playlist_items(playlist_id, order):
             videos.append(video_data)
 
         next_page_token = playlist_data.get('nextPageToken')
+
+
         
-        if order == "increase":
-            break
-        if order == "decrease":
-            print("decrease")
-            if(len(videos)>=80):
-                videos = []
+        # if order == "increase":
+        #     break
+        # if order == "decrease":
+        #     print("decrease")
+        #     if(len(videos)>=80):
+        #         videos = []
         
         if not next_page_token:
             break
@@ -173,14 +197,13 @@ def fetch_all_playlist_items(playlist_id, order):
     return videos
 
 def processing(data):
-    # i=0
     for channel in tqdm(data, desc="Processing Channels"):
         channel_name = channel['channel']
-        # if(i>=7):
-        #     i=i+1
-        #     continue
-
+        
+       
+      
         for playlist in tqdm(channel['playlists'], desc=f"Processing Playlists for {channel_name}", leave=False):
+           
             print(f"  Playlist Id: {playlist['playlist_id']}")
             print(f"  Playlist Name: {playlist['playlist_name']}")
 
@@ -188,13 +211,25 @@ def processing(data):
             playlist_name = playlist['playlist_name']
 
             order = checkPlaylistOrder(playlist_id)
+
+            if order != 'increase':
+                print(i)
+                i=i+1
+                continue
             
             all_videos = fetch_all_playlist_items(playlist_id, order)
+
+            print(f"Total videos retrieved without any filter: {len(all_videos)}")
+
+            all_videos = filter_videos_by_date(all_videos , '1 April 2024')
+
+            print(f"Total videos retrieved with date filter: {len(all_videos)}")
 
             all_videos = filter_videos_by_duration(all_videos)
 
             print(f"Total videos retrieved: {len(all_videos)}")
             store_videos(all_videos, channel_name, playlist_name)
+        
 
 def main():
     data = load_data()
