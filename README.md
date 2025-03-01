@@ -12,7 +12,9 @@ This project retrieves videos from specified YouTube playlists, filters them by 
 - [Setting up YouTube Data API](#setting-up-youtube-data-api)
 - [Code Explanation](#code-explanation)
 - [Directory Structure](#directory-structure)
-- [Changing the Date for Video Filtering](#changing-the-date-for-Video-filtering)
+- [Instructions for Filtering and Processing YouTube Playlist Videos](#instructions-for-filtering-and-processing-youTube-playlist-videos)
+
+
 ---
 
 
@@ -146,14 +148,25 @@ Refer to the [YouTube Data API documentation](https://developers.google.com/yout
 ---
 
 
-## Changing the Date for Video Filtering
-You can change the date for filtering videos in this line inside the `processing` function:  
+## Instructions for Filtering and Processing YouTube Playlist Videos
 
-```python
-all_videos = filter_videos_by_date(all_videos , '1 April 2024')
-```
+1. **Determine Playlist Order:**  
+   - The function `checkPlaylistOrder(playlist_id)` checks whether videos in a playlist are ordered as `"increase"` (oldest to newest) or `"decrease"` (newest to oldest).  
+   - This is based on the difference between the first and ninth video's publish dates:  
+     - **Positive difference → "increase"** (chronological order).  
+     - **Negative difference → "decrease"** (reverse order).  
 
-If you want to filter videos published after a different date, update `'1 April 2024'` to your desired date in the same format (`"DD Month YYYY"`).
+2. **Process Only "Increase" Order Playlists:**  
+   - If the playlist order is **not** `"increase"`, it is skipped using `continue`.  
+   - Only playlists with `"increase"` order proceed to further processing.  
+
+3. **Fetch and Filter Videos:**  
+   - Retrieve all videos from the playlist.  
+   - Apply a date filter using `filter_videos_by_date(all_videos, '1 April 2024')`.  
+   - Apply a duration filter using `filter_videos_by_duration(all_videos)`.  
+
+4. **Store Processed Videos:**  
+   - The final list of videos is stored along with channel and playlist details.
 
 
 ## Directory Structure
